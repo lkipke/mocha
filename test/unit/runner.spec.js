@@ -852,7 +852,7 @@ describe('Runner', function() {
             ]).and('was called once');
           });
 
-          describe('when Runner has already started', function() {
+          describe('when Runner is RUNNING', function() {
             beforeEach(function() {
               runner.state = STATE_RUNNING;
             });
@@ -869,39 +869,45 @@ describe('Runner', function() {
             });
           });
 
-          describe('when Runner not running', function() {
-            describe('when idle', function() {
-              beforeEach(function() {
-                runner.state = STATE_IDLE;
-              });
-
-              it('should emit start/end events for the benefit of reporters', function() {
-                expect(
-                  function() {
-                    runner.uncaught(err);
-                  },
-                  'to emit from',
-                  runner,
-                  'start'
-                ).and('to emit from', runner, 'end');
-              });
+          describe('when Runner is IDLE', function() {
+            beforeEach(function() {
+              runner.state = STATE_IDLE;
             });
 
-            describe('when stopped', function() {
-              beforeEach(function() {
-                runner.state = STATE_STOPPED;
-              });
+            it('should emit start/end events for the benefit of reporters', function() {
+              expect(
+                function() {
+                  runner.uncaught(err);
+                },
+                'to emit from',
+                runner,
+                'start'
+              ).and('to emit from', runner, 'end');
+            });
+          });
 
-              it('should emit start/end events for the benefit of reporters', function() {
-                expect(
-                  function() {
+          describe('when Runner is STOPPED', function() {
+            beforeEach(function() {
+              runner.state = STATE_STOPPED;
+            });
+
+            it('should not emit start/end events, since this presumably would have already happened', function() {
+              expect(
+                function() {
+                  try {
                     runner.uncaught(err);
-                  },
-                  'to emit from',
-                  runner,
-                  'start'
-                ).and('to emit from', runner, 'end');
-              });
+                  } catch (ignored) {}
+                },
+                'not to emit from',
+                runner,
+                'start'
+              ).and('not to emit from', runner, 'end');
+            });
+
+            it('should throw', function() {
+              expect(function() {
+                runner.uncaught(err);
+              }, 'to throw');
             });
           });
         });
